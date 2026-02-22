@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Shop</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Header с балансом -->
+        <header class="header">
+            <div class="balance" id="balance">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount">0</span>
+                <span class="balance-currency">🌟</span>
+            </div>
+            <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="content" id="content">
+            <!-- Здесь будет динамический контент -->
+        </main>
+
+        <!-- Нижнее меню -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" onclick="showShop()">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-text">Магазин</span>
+            </button>
+            <button class="nav-btn" onclick="showInventory()">
+                <span class="nav-icon">📦</span>
+                <span class="nav-text">Инвентарь</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
