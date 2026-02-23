@@ -9,9 +9,12 @@ let inventory = [];
 // Инициализация
 tg.ready();
 tg.expand();
+console.log("✅ Mini App инициализирован");
+console.log("👤 Пользователь:", userData);
 
 // Загружаем данные
 async function loadData() {
+    console.log("🔄 Загрузка данных...");
     await loadBalance();
     await loadGifts();
     await loadInventory();
@@ -19,59 +22,70 @@ async function loadData() {
 
 async function loadBalance() {
     try {
+        console.log("💰 Запрос баланса...");
         const response = await fetch('/webapp-data', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({action: 'get_balance'})
         });
         const data = await response.json();
+        console.log("💰 Ответ баланса:", data);
         if (data.success) {
             balance = data.balance;
             updateBalance();
         }
     } catch (e) {
-        console.error('Balance error:', e);
+        console.error('❌ Balance error:', e);
     }
 }
 
 async function loadGifts() {
     try {
+        console.log("🎁 Запрос подарков...");
         const response = await fetch('/webapp-data', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({action: 'get_gifts'})
         });
         const data = await response.json();
+        console.log("🎁 Ответ подарков:", data);
+        
         if (data.success) {
-            gifts = data.gifts;
-            categories = data.categories;
+            gifts = data.gifts || [];
+            categories = data.categories || [];
             balance = data.balance;
+            console.log(`✅ Загружено подарков: ${gifts.length}`);
+            console.log(`✅ Загружено категорий: ${categories.length}`);
             updateBalance();
             renderShop();
         } else {
-            console.error('Failed to load gifts:', data);
+            console.error('❌ Failed to load gifts:', data);
         }
     } catch (e) {
-        console.error('Gifts error:', e);
+        console.error('❌ Gifts error:', e);
     }
 }
 
 async function loadInventory() {
     try {
+        console.log("📦 Запрос инвентаря...");
         const response = await fetch('/webapp-data', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({action: 'get_inventory'})
         });
         const data = await response.json();
+        console.log("📦 Ответ инвентаря:", data);
+        
         if (data.success) {
-            inventory = data.inventory;
+            inventory = data.inventory || [];
             balance = data.balance;
+            console.log(`✅ Загружено предметов: ${inventory.length}`);
             updateBalance();
             if (currentView === 'inventory') renderInventory();
         }
     } catch (e) {
-        console.error('Inventory error:', e);
+        console.error('❌ Inventory error:', e);
     }
 }
 
@@ -79,11 +93,13 @@ function updateBalance() {
     const balanceElement = document.querySelector('.balance-amount');
     if (balanceElement) {
         balanceElement.textContent = balance;
+        console.log(`💰 Баланс обновлен: ${balance}`);
     }
 }
 
 // Показать магазин
 function showShop() {
+    console.log("🛒 Открыт магазин");
     currentView = 'shop';
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector('.nav-btn:first-child').classList.add('active');
@@ -92,6 +108,7 @@ function showShop() {
 
 // Показать инвентарь
 function showInventory() {
+    console.log("📦 Открыт инвентарь");
     currentView = 'inventory';
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector('.nav-btn:last-child').classList.add('active');
@@ -184,6 +201,7 @@ function renderInventory() {
 function showGiftDetails(giftId) {
     const gift = gifts.find(g => g.id === giftId);
     if (!gift) return;
+    console.log("🎁 Детали подарка:", gift);
     
     const modal = document.createElement('div');
     modal.className = 'modal active';
@@ -232,6 +250,7 @@ function showGiftDetails(giftId) {
 function showGiftActions(userGiftId) {
     const item = inventory.find(i => i.id === userGiftId);
     if (!item || item.is_used) return;
+    console.log("🎁 Действия с подарком:", item);
     
     const modal = document.createElement('div');
     modal.className = 'modal active';
@@ -256,6 +275,7 @@ function showGiftActions(userGiftId) {
 
 // Купить подарок
 async function buyGift(giftId) {
+    console.log("🛒 Покупка подарка:", giftId);
     try {
         const response = await fetch('/webapp-data', {
             method: 'POST',
@@ -267,6 +287,7 @@ async function buyGift(giftId) {
         });
         
         const result = await response.json();
+        console.log("🛒 Результат покупки:", result);
         
         if (result.success) {
             if (result.new_balance !== undefined) {
@@ -278,15 +299,17 @@ async function buyGift(giftId) {
             await loadGifts();
             document.querySelector('.modal')?.remove();
         } else {
-            showToast('❌ ' + result.error);
+            showToast('❌ ' + (result.error || 'Ошибка'));
         }
     } catch (e) {
+        console.error('❌ Ошибка при покупке:', e);
         showToast('❌ Ошибка при покупке');
     }
 }
 
 // Использовать подарок
 async function useGift(userGiftId) {
+    console.log("🎁 Использование подарка:", userGiftId);
     try {
         const response = await fetch('/webapp-data', {
             method: 'POST',
@@ -298,6 +321,7 @@ async function useGift(userGiftId) {
         });
         
         const result = await response.json();
+        console.log("🎁 Результат использования:", result);
         
         if (result.success) {
             showToast('✅ Подарок использован!');
@@ -305,12 +329,14 @@ async function useGift(userGiftId) {
             document.querySelector('.modal')?.remove();
         }
     } catch (e) {
+        console.error('❌ Ошибка:', e);
         showToast('❌ Ошибка');
     }
 }
 
 // Показать форму отправки
 function showSendForm(userGiftId) {
+    console.log("📤 Отправка подарка:", userGiftId);
     const modal = document.querySelector('.modal.active');
     if (!modal) return;
     
@@ -339,6 +365,8 @@ async function sendGift(userGiftId) {
         return;
     }
     
+    console.log("📤 Отправка подарка:", {userGiftId, username, message});
+    
     try {
         const response = await fetch('/webapp-data', {
             method: 'POST',
@@ -352,15 +380,17 @@ async function sendGift(userGiftId) {
         });
         
         const result = await response.json();
+        console.log("📤 Результат отправки:", result);
         
         if (result.success) {
             showToast('✅ Подарок отправлен!');
             await loadInventory();
             document.querySelector('.modal')?.remove();
         } else {
-            showToast('❌ ' + result.error);
+            showToast('❌ ' + (result.error || 'Ошибка'));
         }
     } catch (e) {
+        console.error('❌ Ошибка:', e);
         showToast('❌ Ошибка');
     }
 }
@@ -377,6 +407,7 @@ function showToast(text) {
 
 // Фильтр категорий
 function filterCategory(categoryId) {
+    console.log("🔍 Фильтр по категории:", categoryId);
     document.querySelectorAll('.category-chip').forEach(chip => {
         chip.classList.remove('active');
     });
